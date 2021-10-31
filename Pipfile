@@ -10,7 +10,9 @@ django-cors-headers = "*"
 psycopg2-binary = "*"
 
 [dev-packages]
+coverage = "*"
 autopep8 = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.9"
