@@ -7,7 +7,9 @@ name = "pypi"
 django = "*"
 graphene-django = "*"
 django-cors-headers = "*"
+django-softdelete = ">=0.9.2"
 psycopg2-binary = "*"
+numpy = "*"
 
 [dev-packages]
 coverage = "*"
