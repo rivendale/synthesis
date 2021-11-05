@@ -40,10 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'graphene_django',
+    'softdelete',
 
-    'app.api'
-
+    'app.api',
+    'app.api.stats',
 ]
+GRAPHENE = {
+    'SCHEMA': 'app.schema.schema',
+    'MIDDLEWARE': [
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -134,3 +140,11 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+RPC_URL = os.getenv('RPC_URL', 'https://mainnet.infura.io')
+
+# Bored Ape Yacht Club contract address
+BAYC_CONTRACT_ADDRESS = os.getenv('BAYC_CONTRACT_ADDRESS', '')
+
+# Rumble Kong League contract address
+RKL_CONTRACT_ADDRESS = os.getenv('RKL_CONTRACT_ADDRESS', '')
