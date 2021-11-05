@@ -2,8 +2,9 @@ import graphene
 from django.db.models import Q
 from graphene_django.types import ObjectType
 
-from ..helpers.pagination_helper import pagination_helper
 from ..helpers.validate_address import validate_address
+
+from ..helpers.pagination_helper import pagination_helper
 from .models import AddressTokens
 from .object_types import StatsaginatedType, StatsType
 
