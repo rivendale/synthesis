@@ -1,6 +1,7 @@
-from web3 import Web3
-from django.conf import settings
 import os
+
+from django.conf import settings
+from web3 import Web3
 
 provider = Web3(Web3.HTTPProvider(settings.RPC_URL))
 
