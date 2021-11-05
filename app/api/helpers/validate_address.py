@@ -1,7 +1,5 @@
-from django.conf import settings
 from django.db import transaction
 from graphql import GraphQLError
-from web3 import Web3
 from app import celery_app
 
 from ..stats.models import AddressTokens, BaycToken
@@ -9,7 +7,8 @@ from ..utils.contract_actions.bored_ape_yacht import (
     get_bayc_tokens, get_bayc_address_token_count)
 from .validation_errors import error_dict
 
-provider = Web3(Web3.HTTPProvider(settings.RPC_URL))
+from .validation_errors import error_dict
+from ..stats.models import AddressTokens
 
 
 def validate_address(address):
@@ -25,7 +24,6 @@ def validate_address(address):
     if not address:
         raise GraphQLError(error_dict['empty_field'].format('address field'))
     try:
-        provider.toChecksumAddress(address)
         obj = AddressTokens.objects.get(address=address)
     except Exception as e:
         if isinstance(e, ValueError):
