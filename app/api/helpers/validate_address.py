@@ -1,12 +1,12 @@
 from django.conf import settings
+from django.db import transaction
 from graphql import GraphQLError
 from web3 import Web3
+from app import celery_app
 
-from ..stats.models import AddressTokens
-from ..utils.contract_actions.bored_ape_yacht import \
-    get_bayc_address_token_count
-from ..utils.contract_actions.rumble_kong_league import \
-    get_rkl_address_token_count
+from ..stats.models import AddressTokens, BaycToken
+from ..utils.contract_actions.bored_ape_yacht import (
+    get_bayc_tokens, get_bayc_address_token_count)
 from .validation_errors import error_dict
 
 provider = Web3(Web3.HTTPProvider(settings.RPC_URL))
@@ -31,14 +31,35 @@ def validate_address(address):
         if isinstance(e, ValueError):
             raise GraphQLError(error_dict['invalid_input'].format('ethereum address'))
         if isinstance(e, AddressTokens.DoesNotExist):
-            rumble_kong_league_token_count = get_rkl_address_token_count(address)
-            bored_ape_yacht_token_count = get_bayc_address_token_count(address)
-            data = {
-                'address': address,
-                'bored_ape_yacht_token_count': bored_ape_yacht_token_count,
-                'rumble_kong_league_token_count': rumble_kong_league_token_count
-            }
-
-            obj = AddressTokens.objects.create(**data)
+            tokens = get_bayc_tokens(address)
+            obj = AddressTokens.objects.create(**{"address": address})
+            for token in tokens:
+                data = {
+                    'token_id': token.pop('token_id'),
+                    'metadata': token,
+                }
+                bayc_obj = BaycToken.objects.create(**data)
+                obj.bored_ape_yacht.add(bayc_obj)
 
     return obj
+
+
+@celery_app.task(name="update bayc address nfts")
+def update_bayc_address_nfts():
+    '''
+    Update the number of NFTs for each address in the Bored Ape Yacht
+    '''
+
+    for address in AddressTokens.objects.all():
+        with transaction.atomic():
+            address.bored_ape_yacht.all().delete()
+            if address.bored_ape_yacht_token_count \
+                    != get_bayc_address_token_count(address.address):
+                tokens = get_bayc_tokens(address.address)
+                for token in tokens:
+                    data = {
+                        'token_id': token.pop('token_id'),
+                        'metadata': token,
+                    }
+                    bayc_obj = BaycToken.objects.create(**data)
+                    address.bored_ape_yacht.add(bayc_obj)
