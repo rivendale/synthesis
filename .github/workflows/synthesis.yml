@@ -47,7 +47,9 @@ jobs:
           sudo apt-get install python-dev libpq-dev
 
       - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
+        run: |
+            rm -rf /home/runner/.pipenv/virtualenvs/synthesis-*
+            python -m pip install --upgrade pipenv wheel
 
       - name: Cache Pipenv virtualenv
         uses: actions/cache@v1
@@ -59,16 +61,17 @@ jobs:
             ${{ runner.os }}-pipenv-v4-
 
       - name: Install Dependencies
-        if: steps.pipenv-cache.outputs.cache-hit != 'true'
+        # if: steps.pipenv-cache.outputs.cache-hit != 'true'
         env:
-          PIPENV_NOSPIN: "true"
+        #   PIPENV_NOSPIN: "true"
           WORKON_HOME: ~/.pipenv/virtualenvs
           PIPENV_CACHE_DIR: ~/.pipenv/pipcache
         run: pipenv install --dev
 
+
       - name: Lint with flake8
         env:
-          PIPENV_NOSPIN: "true"
+        #   PIPENV_NOSPIN: "true"
           WORKON_HOME: ~/.pipenv/virtualenvs
           PYTHONPATH: "."
         run: |
@@ -76,7 +79,7 @@ jobs:
 
       - name: Test with Coverage
         env:
-          PIPENV_NOSPIN: "true"
+          # PIPENV_NOSPIN: "true"
           WORKON_HOME: ~/.pipenv/virtualenvs
           DB_USER: postgres
           DB_PASSWORD: postgres

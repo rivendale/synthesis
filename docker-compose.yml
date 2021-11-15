@@ -63,6 +63,7 @@ services:
       dockerfile: nginx/nginx.Dockerfile
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - back-end
     depends_on:
@@ -70,6 +71,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/synthesis/backendstatic/
+      - /etc/letsencrypt/:/etc/letsencrypt/
     restart: always
 networks:
   back-end:
