@@ -1,4 +1,4 @@
-FROM python:3.9.8-slim
+FROM python:3.8.9-slim
 
 ENV MICRO_SERVICE=/synthesis
 # set work directory
