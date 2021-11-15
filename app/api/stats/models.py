@@ -28,7 +28,7 @@ class AddressTokens(BaseModel):
                                unique=True, blank=False)
     bored_ape_yacht = models.ManyToManyField(BaycToken,
                                              related_name='bored_ape_yacht')
-    rumble_kong_league = models.ManyToManyField(BaycToken,
+    rumble_kong_league = models.ManyToManyField(RklToken,
                                                 related_name='rumble_kong_league')
 
     @property
