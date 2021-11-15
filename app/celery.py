@@ -5,7 +5,7 @@ from celery.schedules import crontab
 
 # set the default Django settings module for the 'celery' program.
 if not os.getenv('DJANGO_SETTINGS_MODULE', ''):
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings.production')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings.development')
 CELERY_TASKS = [
     "app.api.helpers.validate_address",
 ]
@@ -22,6 +22,10 @@ app = Celery('app', include=CELERY_TASKS)
 app.conf.beat_schedule = {
     'update bayc address nfts': {
         'task': 'update bayc address nfts',
+        'schedule': crontab(minute=0, hour=0)
+    },
+    'update rkl address nfts': {
+        'task': 'update rkl address nfts',
         'schedule': crontab(minute=0, hour=0)
     },
 }

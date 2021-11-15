@@ -13,6 +13,10 @@ numpy = "*"
 redis = "*"
 celery = "*"
 gevent = "*"
+whitenoise = "*"
+web3 = "*"
+gunicorn = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 coverage = "*"

@@ -1,0 +1,79 @@
+version: "3.1"
+services:
+  database:
+    restart: always
+    image: postgres:13.2
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - database_volume:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    expose:
+      - "5433"
+    networks:
+      - back-end
+  redis:
+    image: redis
+    ports:
+      - "6378:6379"
+    networks:
+      - back-end
+    expose:
+      - "6378"
+    volumes:
+      - redis_volume:/data
+  app:
+    restart: always
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    expose:
+      - "8000"
+    image: synthesis
+    volumes:
+      - .:/synthesis
+      - static_volume:/synthesis/app/staticfiles/
+    depends_on:
+      - database
+    entrypoint: ["/bin/bash", "-c", "/synthesis/docker/start_api.sh"]
+    stdin_open: true
+    tty: true
+    networks:
+      - back-end
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=database
+      - SECRET_KEY=${SECRET_KEY}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+      - RPC_URL=${RPC_URL}
+      - BAYC_CONTRACT_ADDRESS=${BAYC_CONTRACT_ADDRESS}
+      - RKL_CONTRACT_ADDRESS=${RKL_CONTRACT_ADDRESS}
+      - IPFS_GATEWAY_URL=${IPFS_GATEWAY_URL}
+      - CELERY_BROKER_URL=redis://redis
+      - CELERY_RESULT_BACKEND=redis://redis
+  proxy:
+    image: synthesis-proxy
+    build:
+      context: .
+      dockerfile: nginx/nginx.Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - back-end
+    depends_on:
+      - app
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/synthesis/backendstatic/
+    restart: always
+networks:
+  back-end:
+volumes:
+  static_volume:
+  database_volume:
+  redis_volume:

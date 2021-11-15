@@ -4,9 +4,11 @@ from graphql import GraphQLError
 from web3 import Web3
 from app import celery_app
 
-from ..stats.models import AddressTokens, BaycToken
+from ..stats.models import AddressTokens, BaycToken, RklToken
 from ..utils.contract_actions.bored_ape_yacht import (
     get_bayc_tokens, get_bayc_address_token_count)
+from ..utils.contract_actions.rumble_kong_league import (
+    get_rkl_tokens, get_rkl_address_token_count)
 from .validation_errors import error_dict
 
 provider = Web3(Web3.HTTPProvider(settings.RPC_URL))
@@ -31,15 +33,23 @@ def validate_address(address):
         if isinstance(e, ValueError):
             raise GraphQLError(error_dict['invalid_input'].format('ethereum address'))
         if isinstance(e, AddressTokens.DoesNotExist):
-            tokens = get_bayc_tokens(address)
+            bayc_tokens = get_bayc_tokens(address)
             obj = AddressTokens.objects.create(**{"address": address})
-            for token in tokens:
+            for token in bayc_tokens:
                 data = {
                     'token_id': token.pop('token_id'),
                     'metadata': token,
                 }
                 bayc_obj = BaycToken.objects.create(**data)
                 obj.bored_ape_yacht.add(bayc_obj)
+            rkl_tokens = get_rkl_tokens(address)
+            for token in rkl_tokens:
+                data = {
+                    'token_id': token.pop('token_id'),
+                    'metadata': token,
+                }
+                rkl_obj = RklToken.objects.create(**data)
+                obj.rumble_kong_league.add(rkl_obj)
 
     return obj
 
@@ -52,9 +62,9 @@ def update_bayc_address_nfts():
 
     for address in AddressTokens.objects.all():
         with transaction.atomic():
-            address.bored_ape_yacht.all().delete()
             if address.bored_ape_yacht_token_count \
                     != get_bayc_address_token_count(address.address):
+                address.bored_ape_yacht.all().delete()
                 tokens = get_bayc_tokens(address.address)
                 for token in tokens:
                     data = {
@@ -63,3 +73,24 @@ def update_bayc_address_nfts():
                     }
                     bayc_obj = BaycToken.objects.create(**data)
                     address.bored_ape_yacht.add(bayc_obj)
+
+
+@celery_app.task(name="update rkl address nfts")
+def update_rkl_address_nfts():
+    '''
+    Update the number of NFTs for each address in the Rumble Kong League
+    '''
+
+    for address in AddressTokens.objects.all():
+        with transaction.atomic():
+            if address.bored_ape_yacht_token_count \
+                    != get_rkl_address_token_count(address.address):
+                address.rumble_kong_league.all().delete()
+                tokens = get_rkl_tokens(address.address)
+                for token in tokens:
+                    data = {
+                        'token_id': token.pop('token_id'),
+                        'metadata': token,
+                    }
+                    rkl_obj = RklToken.objects.create(**data)
+                    address.rumble_kong_league.add(rkl_obj)
