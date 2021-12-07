@@ -1,7 +1,7 @@
 import graphene
 from graphene.types.generic import GenericScalar
 from graphene_django.types import DjangoObjectType
-
+from django.conf import settings
 from .models import AddressTokens, RklToken, BaycToken
 
 
@@ -10,6 +10,24 @@ class RklTokenType(DjangoObjectType):
     Create a GraphQL type for the address RklToken model
     """
     metadata = GenericScalar()
+
+    def resolve_metadata(self, info):
+        metadata = self.metadata
+        try:
+            pinata_url = "https://gateway.pinata.cloud/ipfs"
+            cloudflare_url = "https://cloudflare-ipfs.com/ipfs"
+            metadata['image_url'] = (metadata['image_url'].replace(
+                pinata_url,
+                settings.IPFS_GATEWAY_URL).replace(cloudflare_url,
+                                                   settings.IPFS_GATEWAY_URL))
+            metadata['token_url'] = (metadata['token_url'].replace(
+                pinata_url,
+                settings.IPFS_GATEWAY_URL).replace(cloudflare_url,
+                                                   settings.IPFS_GATEWAY_URL))
+
+        except Exception:
+            pass
+        return metadata
 
     class Meta:
         '''Defines the fields to be serialized in the address RklToken model'''
@@ -21,6 +39,24 @@ class BaycTokenType(DjangoObjectType):
     Create a GraphQL type for the address BaycToken model
     """
     metadata = GenericScalar()
+
+    def resolve_metadata(self, info):
+        metadata = self.metadata
+        try:
+            pinata_url = "https://gateway.pinata.cloud/ipfs"
+            cloudflare_url = "https://cloudflare-ipfs.com/ipfs"
+            metadata['image_url'] = (metadata['image_url'].replace(
+                pinata_url,
+                settings.IPFS_GATEWAY_URL).replace(cloudflare_url,
+                                                   settings.IPFS_GATEWAY_URL))
+            metadata['token_url'] = (metadata['token_url'].replace(
+                pinata_url,
+                settings.IPFS_GATEWAY_URL).replace(cloudflare_url,
+                                                   settings.IPFS_GATEWAY_URL))
+
+        except Exception:
+            pass
+        return metadata
 
     class Meta:
         '''Defines the fields to be serialized in the address BaycToken model'''
@@ -45,7 +81,31 @@ class StatsType(DjangoObjectType):
         model = AddressTokens
 
 
-class StatsaginatedType(graphene.ObjectType):
+class BaycpaginatedType(graphene.ObjectType):
+    """
+    Bayc pagination input types
+    """
+    count = graphene.Int()
+    page = graphene.Int()
+    pages = graphene.Int()
+    has_next = graphene.Boolean()
+    has_prev = graphene.Boolean()
+    items = graphene.List(BaycTokenType)
+
+
+class RklpaginatedType(graphene.ObjectType):
+    """
+    Bayc pagination input types
+    """
+    count = graphene.Int()
+    page = graphene.Int()
+    pages = graphene.Int()
+    has_next = graphene.Boolean()
+    has_prev = graphene.Boolean()
+    items = graphene.List(RklTokenType)
+
+
+class StatspaginatedType(graphene.ObjectType):
     """
     Question pagination input types
     """

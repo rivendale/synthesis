@@ -32,7 +32,7 @@ services:
       dockerfile: docker/Dockerfile
     expose:
       - "8000"
-    image: synthesis
+    image: synthesis-api
     volumes:
       - .:/synthesis
       - static_volume:/synthesis/app/staticfiles/

@@ -30,6 +30,7 @@ class AddressTokens(BaseModel):
                                              related_name='bored_ape_yacht')
     rumble_kong_league = models.ManyToManyField(RklToken,
                                                 related_name='rumble_kong_league')
+    fetching_stats = models.BooleanField(default=False)
 
     @property
     def bored_ape_yacht_token_count(self):

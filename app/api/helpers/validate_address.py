@@ -54,34 +54,16 @@ def validate_address(address):
     return obj
 
 
-@celery_app.task(name="update bayc address nfts")
-def update_bayc_address_nfts():
-    '''
-    Update the number of NFTs for each address in the Bored Ape Yacht
-    '''
-
-    for address in AddressTokens.objects.all():
-        with transaction.atomic():
-            if address.bored_ape_yacht_token_count \
-                    != get_bayc_address_token_count(address.address):
-                address.bored_ape_yacht.all().delete()
-                tokens = get_bayc_tokens(address.address)
-                for token in tokens:
-                    data = {
-                        'token_id': token.pop('token_id'),
-                        'metadata': token,
-                    }
-                    bayc_obj = BaycToken.objects.create(**data)
-                    address.bored_ape_yacht.add(bayc_obj)
-
-
 @celery_app.task(name="update rkl address nfts")
-def update_rkl_address_nfts():
+def update_rkl_address_nfts(address_id=None):
     '''
     Update the number of NFTs for each address in the Rumble Kong League
     '''
-
-    for address in AddressTokens.objects.all():
+    address_obj = None
+    if address_id:
+        address_obj = AddressTokens.objects.get(id=address_id)
+    addresses = [address_obj] if address_obj else AddressTokens.objects.all()
+    for address in addresses:
         with transaction.atomic():
             if address.bored_ape_yacht_token_count \
                     != get_rkl_address_token_count(address.address):
@@ -94,3 +76,31 @@ def update_rkl_address_nfts():
                     }
                     rkl_obj = RklToken.objects.create(**data)
                     address.rumble_kong_league.add(rkl_obj)
+            address.fetching_stats = False
+            address.save()
+
+
+@celery_app.task(name="update bayc address nfts")
+def update_bayc_address_nfts(address_id=None):
+    '''
+    Update the number of NFTs for each address in the Bored Ape Yacht
+    '''
+    address_obj = None
+    if address_id:
+        address_obj = AddressTokens.objects.get(id=address_id)
+    addresses = [address_obj] if address_obj else AddressTokens.objects.all()
+    for address in addresses:
+        with transaction.atomic():
+            if address.bored_ape_yacht_token_count \
+                    != get_bayc_address_token_count(address.address):
+                address.bored_ape_yacht.all().delete()
+                tokens = get_bayc_tokens(address.address)
+                for token in tokens:
+                    data = {
+                        'token_id': token.pop('token_id'),
+                        'metadata': token,
+                    }
+                    bayc_obj = BaycToken.objects.create(**data)
+                    address.bored_ape_yacht.add(bayc_obj)
+            if address_id:
+                update_rkl_address_nfts.delay(address_id)
