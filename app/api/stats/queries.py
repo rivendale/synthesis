@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import graphene
 from django.conf import settings
 from django.db.models import Count, Q
@@ -10,13 +12,14 @@ from ..helpers.validate_address import (update_bayc_address_nfts,
                                         validate_address)
 from ..helpers.validation_errors import error_dict
 from .models import AddressTokens, BaycToken, RklToken
-from .object_types import (BaycpaginatedType, RklpaginatedType,
-                           StatspaginatedType, StatsType)
+from .object_types import (BaycpaginatedType, GeneralStatsType,
+                           RklpaginatedType, StatspaginatedType, StatsType)
 
 provider = Web3(Web3.HTTPProvider(settings.RPC_URL))
 
 
 class Query(ObjectType):
+    general_stats = graphene.Field(GeneralStatsType)
     address = graphene.Field(StatsType, address=graphene.String())
     addresses = graphene.Field(StatspaginatedType,
                                address=graphene.String(),
@@ -31,6 +34,21 @@ class Query(ObjectType):
                                 address=graphene.String(),
                                 page=graphene.Int(),
                                 limit=graphene.Int())
+
+    def resolve_general_stats(self, info, **kwargs):
+        """
+        Generate general stats
+        """
+        obj = SimpleNamespace()
+        obj.bayc_token_count = BaycToken.objects.count()
+        obj.rkl_token_count = RklToken.objects.count()
+        obj.bayc_addresses_count = (AddressTokens.objects.annotate(
+            bayc_count=Count('bored_ape_yacht'))
+            .filter(bayc_count__gt=0).count())
+        obj.rkl_addresses_count = (AddressTokens.objects.annotate(
+            rkl_count=Count('rumble_kong_league'))
+            .filter(rkl_count__gt=0).count())
+        return obj
 
     def resolve_rkl_tokens(self, info, address=None, **kwargs):
         """

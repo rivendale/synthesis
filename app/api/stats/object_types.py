@@ -105,9 +105,19 @@ class RklpaginatedType(graphene.ObjectType):
     items = graphene.List(RklTokenType)
 
 
+class GeneralStatsType(graphene.ObjectType):
+    """
+    Genaral Stats pagination input types
+    """
+    bayc_token_count = graphene.Int()
+    rkl_token_count = graphene.Int()
+    bayc_addresses_count = graphene.Int()
+    rkl_addresses_count = graphene.Int()
+
+
 class StatspaginatedType(graphene.ObjectType):
     """
-    Question pagination input types
+    Stats pagination input types
     """
     count = graphene.Int()
     page = graphene.Int()
