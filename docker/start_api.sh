@@ -27,5 +27,6 @@ sleep 5
 echo " "
 echo "<<<<<<<<<<<<<<<<<>><<< START API >>>>>>>>>>>>>>>>>>>>>>>>>>"
 # Start the API with gunicorn
-gunicorn -k uvicorn.workers.UvicornH11Worker --threads=3 --bind 0.0.0.0:8000 app.asgi --reload --access-logfile '-' --workers=4
+# python manage.py runserver
+gunicorn -k uvicorn.workers.UvicornH11Worker --threads=3 --bind 0.0.0.0:8000 app.asgi --reload --access-logfile '-' --workers=1
 # daphne -b 0.0.0.0 -p 8000 app.asgi:application

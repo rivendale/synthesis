@@ -3,7 +3,7 @@ from .base import *  # noqa # pylint: disable=unused-wildcard-import
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', '127.0.0.1', '0.0.0.0',
+ALLOWED_HOSTS = ['*', '127.0.0.1', '0.0.0.0', 'localhost',
                  os.getenv('ALLOWED_LOCAL_HOST', '')]
 
 CORS_ORIGIN_WHITELIST = []

@@ -7,7 +7,6 @@ from web3 import Web3
 
 from ..helpers.pagination_helper import pagination_helper
 from ..helpers.validate_address import (update_bayc_address_nfts,
-                                        update_rkl_address_nfts,
                                         validate_address)
 from ..helpers.validation_errors import error_dict
 from .models import AddressTokens, BaycToken, RklToken
@@ -108,7 +107,6 @@ class Query(ObjectType):
                     obj = AddressTokens.objects.create(**{"address": address,
                                                           'fetching_stats': True})
                     update_bayc_address_nfts.delay(obj.id)
-                    update_rkl_address_nfts.delay(obj.id)
             filter = (
                 Q(address__icontains=address)
             )
