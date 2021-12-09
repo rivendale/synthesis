@@ -27,7 +27,7 @@ def validate_address(address):
     if not address:
         raise GraphQLError(error_dict['empty_field'].format('address field'))
     try:
-        provider.toChecksumAddress(address)
+        address = provider.toChecksumAddress(address.lower())
         obj = AddressTokens.objects.get(address=address)
     except Exception as e:
         if isinstance(e, ValueError):
@@ -64,11 +64,12 @@ def update_rkl_address_nfts(address_id=None):
         address_obj = AddressTokens.objects.get(id=address_id)
     addresses = [address_obj] if address_obj else AddressTokens.objects.all()
     for address in addresses:
+        addr = Web3.toChecksumAddress(address.address.lower())
         with transaction.atomic():
             if address.bored_ape_yacht_token_count \
-                    != get_rkl_address_token_count(address.address):
+                    != get_rkl_address_token_count(addr):
                 address.rumble_kong_league.all().delete()
-                tokens = get_rkl_tokens(address.address)
+                tokens = get_rkl_tokens(addr)
                 for token in tokens:
                     data = {
                         'token_id': token.pop('token_id'),
@@ -90,11 +91,12 @@ def update_bayc_address_nfts(address_id=None):
         address_obj = AddressTokens.objects.get(id=address_id)
     addresses = [address_obj] if address_obj else AddressTokens.objects.all()
     for address in addresses:
+        addr = Web3.toChecksumAddress(address.address.lower())
         with transaction.atomic():
             if address.bored_ape_yacht_token_count \
-                    != get_bayc_address_token_count(address.address):
+                    != get_bayc_address_token_count(addr):
                 address.bored_ape_yacht.all().delete()
-                tokens = get_bayc_tokens(address.address)
+                tokens = get_bayc_tokens(addr)
                 for token in tokens:
                     data = {
                         'token_id': token.pop('token_id'),

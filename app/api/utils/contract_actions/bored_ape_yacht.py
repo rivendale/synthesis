@@ -15,7 +15,12 @@ def get_bayc_address_token_count(address):
     #     if rkl_bal > 0:
     #         print({add: {"bayc": bal, "rkl": rkl_bal}})
     # breakpoint()
-    return contract.functions.balanceOf(address).call()
+    balance = 0
+    try:
+        balance = contract.functions.balanceOf(address).call()
+    except Exception as e:
+        print(e)
+    return balance
 
 
 def get_bayc_tokens(address) -> list:

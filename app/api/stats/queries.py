@@ -62,7 +62,7 @@ class Query(ObjectType):
             limit = 10
         if address:
             try:
-                provider.toChecksumAddress(address)
+                provider.toChecksumAddress(address.lower())
                 tokens = RklToken.objects.filter(
                     rumble_kong_league__address__icontains=address).all()
             except Exception as e:
@@ -86,7 +86,7 @@ class Query(ObjectType):
             limit = 10
         if address:
             try:
-                provider.toChecksumAddress(address)
+                provider.toChecksumAddress(address.lower())
                 tokens = BaycToken.objects.filter(
                     bored_ape_yacht__address__icontains=address).all()
             except Exception as e:
@@ -115,7 +115,7 @@ class Query(ObjectType):
 
         if address:
             try:
-                provider.toChecksumAddress(address)
+                provider.toChecksumAddress(address.lower())
                 AddressTokens.objects.get(address=address)
             except Exception as e:
                 if isinstance(e, ValueError):

@@ -8,7 +8,13 @@ def get_rkl_address_token_count(address):
     Get the number of tokens owned by an address
     """
     contract = get_contract_instance('rkl')
-    return contract.functions.balanceOf(address).call()
+
+    balance = 0
+    try:
+        balance = contract.functions.balanceOf(address).call()
+    except Exception as e:
+        print(e)
+    return balance
 
 
 def get_rkl_tokens(address) -> list:
